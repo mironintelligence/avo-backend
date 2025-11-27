@@ -16,7 +16,7 @@ const { Pool } = pkg;
 // =======================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 });
 
 // DB Test
@@ -32,7 +32,16 @@ pool.query("SELECT NOW()", (err, res) => {
 // EXPRESS
 // =======================
 const app = express();
-app.use(cors());
+
+// CORS FIX — Render için gerek
+app.use(
+  cors({
+    origin: "*", // Tüm domainlere izin
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
 app.use(express.json());
 
 // =======================
@@ -103,9 +112,8 @@ app.post("/api/petition", checkIpLimit, async (req, res) => {
       reply: completion.choices[0].message.content,
       remaining: 5 - ipLimits[ip].petitions,
     });
-
   } catch (err) {
-    console.error(err);
+    console.error("PETITION ERROR:", err);
     res.status(500).json({ reply: "Dilekçe oluşturulamadı." });
   }
 });
@@ -124,7 +132,7 @@ app.post("/api/chat", async (req, res) => {
 
     res.json({ reply: completion.choices[0].message.content });
   } catch (err) {
-    console.error(err.message);
+    console.error("CHAT ERROR:", err);
     res.status(500).json({ reply: "Bir hata oluştu." });
   }
 });
@@ -132,6 +140,7 @@ app.post("/api/chat", async (req, res) => {
 // =======================
 // SERVER START
 // =======================
-app.listen(process.env.PORT || 4000, () => {
-  console.log("🚀 Backend çalışıyor");
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log("🚀 Backend çalışıyor, Port:", PORT);
 });
