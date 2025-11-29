@@ -107,19 +107,16 @@ app.post("/api/petition", checkIpLimit, async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    const completion = await ai.chat.completions.create({
+    const completion = await ai.responses.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "Türk hukuki dilekçe formatında yaz." },
-        { role: "user", content: prompt },
-      ],
+      input: prompt,
     });
 
     ipLimits[ip].petitions++;
 
     res.json({
       error: false,
-      reply: completion.choices[0].message.content,
+      reply: completion.output_text,
       remaining: 5 - ipLimits[ip].petitions,
     });
   } catch (err) {
@@ -127,7 +124,6 @@ app.post("/api/petition", checkIpLimit, async (req, res) => {
     res.status(500).json({ reply: "Dilekçe oluşturulamadı." });
   }
 });
-
 // =======================
 // SOHBET ENDPOINT
 // =======================
@@ -135,18 +131,19 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
-    const completion = await ai.chat.completions.create({
+    const completion = await ai.responses.create({
       model: "gpt-4o-mini",
       messages,
     });
 
-    res.json({ reply: completion.choices[0].message.content });
+    res.json({
+      reply: completion.output_text,
+    });
   } catch (err) {
     console.error("CHAT ERROR:", err);
     res.status(500).json({ reply: "Bir hata oluştu." });
   }
 });
-
 // =======================
 // SERVER START
 // =======================
