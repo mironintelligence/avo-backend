@@ -144,6 +144,14 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ reply: "Bir hata oluştu." });
   }
 });
+
+app.get("/api/test-env", (req, res) => {
+  res.json({
+    openai: process.env.OPENAI_API_KEY ? "VAR" : "YOK",
+    db: process.env.DATABASE_URL ? "VAR" : "YOK",
+  });
+});
+
 // =======================
 // SERVER START
 // =======================
